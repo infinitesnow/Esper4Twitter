@@ -3,6 +3,7 @@ package main;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -57,7 +58,7 @@ public class MessageManager {
 		String user_idstr = getString(getElement(user,"id_str"));
 		String user_name = getString(getElement(user,"name"));
 		JsonObject entitiesObject = getObject(parsedMessage,"entities");
-		JsonObject mediaObject = getObject(entitiesObject,"media");
+		JsonArray mediaObject = getArray(entitiesObject,"media");
 		boolean hasMedia=false;
 		if(mediaObject!=null) 
 			hasMedia=true; 
@@ -81,5 +82,9 @@ public class MessageManager {
 	private JsonElement getElement(JsonObject json,String el){
 		if(json==null) return null;
 		else return json.get(el);
+	}
+	private JsonArray getArray(JsonObject json,String obj){
+		if(json==null) return null;
+		else return json.getAsJsonArray(obj);
 	}
 }
