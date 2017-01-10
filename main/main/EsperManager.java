@@ -1,7 +1,7 @@
 package main;
 
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
 import com.espertech.esper.client.Configuration;
@@ -10,6 +10,7 @@ import com.espertech.esper.client.EPRuntime;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
+import com.espertech.esper.util.FileUtil;
 
 public class EsperManager {
 	
@@ -33,9 +34,7 @@ public class EsperManager {
 		// Create query
 		String query=null;
 		try {
-			FileReader fileReader = new FileReader("query.conf");
-			query = fileReader.toString();
-			fileReader.close();
+			query = FileUtil.readTextFile(new File("query.conf"));
 		} catch (FileNotFoundException e) {
 			System.err.println("No query configuration file found");
 			e.printStackTrace();
@@ -43,7 +42,7 @@ public class EsperManager {
 			System.err.println("Input error while trying to read query from file.");
 			e.printStackTrace();
 		}
-		System.err.println(query);
+		System.err.println("Query:\n" + query + "\n");
 		
 		// Create statement and attach a listener to it
 		cepStatement = cepAdm.createEPL(query);

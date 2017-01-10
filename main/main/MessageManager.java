@@ -19,13 +19,11 @@ public class MessageManager {
 	public MessageManager(){
 		// Create an appropriately sized blocking queue
 		msgQueue = new LinkedBlockingQueue<String>(10000);
-		//esperManager = new EsperManager();
 	}
 	
 	public void processStream(){
-		
 		twitterManager = new TwitterManager(msgQueue);
-		
+		esperManager = new EsperManager();
 		while(true){
 			if(twitterManager.isDone()) break;
 			handleMessage(msgQueue.poll());
@@ -39,26 +37,36 @@ public class MessageManager {
 		JsonObject parsedMessage=null;
 		try {
 			parsedMessage = (JsonObject) parser.parse(msg);
+			if(parsedMessage==null) throw new Exception("Received null message");
 		} catch (JsonParseException e) {
-			System.out.println("Failed to parse message.");
+			System.err.println("Failed to parse message.");
 			e.printStackTrace();
+		} catch (Exception e) {
+			System.err.println("Parsed message is null.");
+			e.printStackTrace();
+			return;
 		}
+		
+		// If it's a delete status, return
+		if(parsedMessage.get("delete")!=null) return;
 		
 		// Get values from fields
 		String idstr = getString(parsedMessage.get("id_str"));
 		String text = getString(parsedMessage.get("text"));
-		JsonObject user = parsedMessage.get("user").getAsJsonObject();
-		String user_idstr = getString(getElement(user,"idstr"));
+		JsonObject user = getObject(parsedMessage,"user");
+		String user_idstr = getString(getElement(user,"id_str"));
 		String user_name = getString(getElement(user,"name"));
-		JsonObject mediaObject = getObject(parsedMessage.get("entities").getAsJsonObject(),"media");
+		JsonObject entitiesObject = getObject(parsedMessage,"entities");
+		JsonObject mediaObject = getObject(entitiesObject,"media");
 		boolean hasMedia=false;
 		if(mediaObject!=null) 
 			hasMedia=true; 
 		
-		System.err.println("Message " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr);
+		System.err.println("Message " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr + ". Has media: " + hasMedia);
 		
 		// Push to Esper stream
-		esperManager.pushToEsper(new TweetEvent(idstr, text, user_idstr, user_name, hasMedia));
+		TweetEvent tweet = new TweetEvent(idstr, text, user_idstr, user_name, hasMedia);
+		esperManager.pushToEsper(tweet);
 	}
 	
 	// This methods are safe for empty fields

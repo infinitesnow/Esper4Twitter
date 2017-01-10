@@ -5,9 +5,11 @@ import com.espertech.esper.client.UpdateListener;
 
 public class TweetListener implements UpdateListener {
 
-	public void update(EventBean[] arg0, EventBean[] arg1) {
-		// TODO Auto-generated method stub
-
+	public void update(EventBean[] incomingEvents, EventBean[] outgoingEvents) {
+		
+		for (EventBean e : incomingEvents) {
+			System.out.println(e.getUnderlying());
+		}
+		
 	}
-
 }
