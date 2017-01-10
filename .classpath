@@ -23,5 +23,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="/opt/esper-5.5.0/esper-5.5.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
