@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -66,12 +68,34 @@ public class EsperManager {
 
 	private void insertQueries(List<String> queryList) {
 		for (String query : queryList){
+			// Create listener output header
+			String patternString="FORMAT\\s+\\\"(.*?)\\\"\\s+";
+			logger.debug("Pattern string: " + patternString);
+			Pattern pattern = Pattern.compile(patternString);
+			Matcher  matcher = pattern.matcher(query);
+			if(!matcher.find()){
+				logger.warn("No valid format found, trying to insert query as generic");
+				insertGenericQuery(query);
+				continue;
+				}
+			String format = matcher.group(1);
+			logger.debug("Format: " + format);
+			// Prepare query
+			query=query.replaceAll("FORMAT\\s+\\\".*?\\\"\\s+","");
 			logger.debug("Inserting query: " + query);
 			// Create statement and attach a listener to it
 			cepStatement = cepAdm.createEPL(query);
-			cepStatement.addListener(new TweetListener());
+			cepStatement.addListener(new TweetListener(format));
 			logger.debug("Done.");
 		}
+	}
+
+	private void insertGenericQuery(String query) {
+		logger.debug("Inserting generic query: " + query);
+		// Create statement and attach a listener to it
+		cepStatement = cepAdm.createEPL(query);
+		cepStatement.addListener(new TweetListener(null));
+		logger.debug("Done.");
 	}
 
 	private List<String> getQueries() throws IOException {
