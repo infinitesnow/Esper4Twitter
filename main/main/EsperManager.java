@@ -83,7 +83,7 @@ public class EsperManager {
 		return queryList;
 	}
 
-	public synchronized void pushToEsper(TweetEvent tweet) {
+	public void pushToEsper(TweetEvent tweet) {
 		logger.trace("Pushing event to Esper: " + tweet.toString());
 		cepRT.sendEvent(tweet);
 		logger.trace("Pushed successfully.");
