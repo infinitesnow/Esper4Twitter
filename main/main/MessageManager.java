@@ -16,8 +16,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 public class MessageManager {
-	public final int SLEEP_TIMER=20;
-	public final int THREADS=8;
+	public static int SLEEP_TIMER=20;
+	public static final int THREADS=8;
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
