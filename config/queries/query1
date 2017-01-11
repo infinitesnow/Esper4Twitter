@@ -1,3 +1,4 @@
-select * from TweetEvent.win:time(4 sec)
-where hasPicture=true
-output snapshot every 2 sec
+select 	(sum(case hasPicture when true then 1 else 0 end ) /
+	sum(case hasPicture when false then 1 else 0 end) ) as ratio	 
+from TweetEvent.win:time( 60 sec )
+output snapshot every 10 sec 

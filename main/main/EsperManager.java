@@ -21,7 +21,7 @@ import com.espertech.esper.client.EPStatement;
 import com.google.common.base.Throwables;
 
 public class EsperManager {
-
+	
 	private EPRuntime cepRT;
 	private EPStatement cepStatement;
 	private EPServiceProvider cep;
@@ -66,10 +66,11 @@ public class EsperManager {
 
 	private void insertQueries(List<String> queryList) {
 		for (String query : queryList){
+			logger.debug("Inserting query: " + query);
 			// Create statement and attach a listener to it
 			cepStatement = cepAdm.createEPL(query);
 			cepStatement.addListener(new TweetListener());
-			logger.debug("Inserted query: " + query);
+			logger.debug("Done.");
 		}
 	}
 

@@ -9,10 +9,13 @@ import com.espertech.esper.client.UpdateListener;
 public class TweetListener implements UpdateListener {
 
 	private static final Logger esperLogger = LogManager.getLogger("EsperLogger");
+	private static final Logger logger = LogManager.getLogger("AppLogger");
+
 	public void update(EventBean[] incomingEvents, EventBean[] outgoingEvents) {
 		if (incomingEvents==null) return;
 		for (EventBean e : incomingEvents) {
-			esperLogger.info(e.getUnderlying());
+			logger.info("Received query output, outputting to log");
+			esperLogger.info("Tweets with pictures: " + Float.parseFloat(e.get("ratio").toString())*100 + "%.");
 		}
 		
 	}

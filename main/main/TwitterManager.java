@@ -52,10 +52,10 @@ public class TwitterManager {
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
 		// Print them to console
-		logger.debug("Using authentication data: \n Consumer key:" + authData.get("consumerKey").getAsString() + 
-				"\n Consumer secret:" + authData.get("consumerSecret").getAsString() + 
-				"\n accessToken" + authData.get("accessToken").getAsString() + 
-				"\n accessTokenSecret" + authData.get("accessTokenSecret").getAsString());
+		logger.debug("Using authentication data: \n consumerKey:" + authData.get("consumerKey").getAsString() + 
+				"\n consumerSecret:" + authData.get("consumerSecret").getAsString() + 
+				"\n accessToken: " + authData.get("accessToken").getAsString() + 
+				"\n accessTokenSecret: " + authData.get("accessTokenSecret").getAsString());
 		Authentication auth = new OAuth1(
 				authData.get("consumerKey").getAsString(), authData.get("consumerSecret").getAsString(),
 				authData.get("accessToken").getAsString(), authData.get("accessTokenSecret").getAsString()

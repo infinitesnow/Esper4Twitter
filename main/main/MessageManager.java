@@ -16,8 +16,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 public class MessageManager {
-	private final int SLEEP_TIMER=20;
-	private final int THREADS=8;
+	public final int SLEEP_TIMER=20;
+	public final int THREADS=8;
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
@@ -44,6 +44,7 @@ public class MessageManager {
 							if(twitterManager.isDone()) break;
 							pollQueue();
 							try {
+								logger.trace("In queue: " + msgQueue.size() + "messages. Sleeping");
 								Thread.sleep(SLEEP_TIMER);
 							} catch (InterruptedException e) {
 								logger.warn("Thread interrupted while sleeping");
