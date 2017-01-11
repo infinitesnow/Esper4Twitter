@@ -1,6 +1,11 @@
 package main;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class TweetEvent {
+	private static final Logger logger = LogManager.getLogger("AppLogger");
+
 	public TweetEvent(String idstr, String text, String user_idstr, String user_name, boolean hasPicture) {
 		super();
 		this.idstr = idstr;
@@ -34,7 +39,7 @@ public class TweetEvent {
 	public String toString() {
 		String event = "TweetEvent [ idstr=" + idstr + ", text=" + text
 				+ ", user_idstr=" + user_idstr + ", user_name=" + user_name + ", hasPicture=" + hasPicture + " ]";
-		System.err.println("Parsed event: " + event);
+		logger.trace("Parsed event: " + event);
 		return event;
 	}
 	
