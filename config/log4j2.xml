@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="warn">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level: %msg%n"/>
+		</Console>
+		<RollingFile name="TweetLogFile" fileName="logs/tweets.log" filePattern="logs/%d{yy-MM-dd}/tweets-%d{yyyy-MM-dd-kk}-%i.log.gz">
+			<PatternLayout pattern="%d{HH:mm:ss} %msg%n"/>
+			<policies>
+				<SizeBasedTriggeringPolicy size="20M"/>
+				<TimeBasedTriggeringPolicy />
+			</policies>
+		</RollingFile>
+		<RollingFile name="EsperLogFile" fileName="logs/esper.log" filePattern="logs/%d{yy-MM-dd}/esper-%d{yyyy-MM-dd-kk}-%i.log.gz">
+			<PatternLayout pattern="%d{HH:mm:ss} %msg%n"/>
+			<policies>
+				<SizeBasedTriggeringPolicy size="20M"/>
+				<TimeBasedTriggeringPolicy />
+			</policies>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Logger name="TweetLogger" level="info" additivity="false">
+			<AppenderRef ref="TweetLogFile"/>
+		</Logger>
+		<Logger name="EsperLogger" level="info" additivity="false">
+			<AppenderRef ref="EsperLogFile"/>
+		</Logger>
+		<Logger name="AppLogger" level="warn" additivity="false">
+			<AppenderRef ref="Console"/>
+		</Logger>
+		<Root level="error">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
+</Configuration>

@@ -4,6 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -17,16 +20,18 @@ import com.twitter.hbc.httpclient.auth.OAuth1;
 
 public class TwitterManager {
 	
+	private static final Logger logger = LogManager.getLogger("AppLogger");
+	
 	private JsonObject readAuthData(){
 		JsonParser parser = new JsonParser(); 
 		JsonObject authData = null;
 		try {
-			authData = (JsonObject) parser.parse(new FileReader("token.json"));
+			authData = (JsonObject) parser.parse(new FileReader("./config/token.json"));
 		} catch (FileNotFoundException e) {
-			System.out.println("Could not find login credentials data.");
+			logger.fatal("Could not find login credentials data.");
 			e.printStackTrace();
 		} catch (JsonParseException e) {
-			System.out.println("Could not parse login credentials data.");
+			logger.fatal("Could not parse login credentials data.");
 			e.printStackTrace();
 		} 
 		return authData;
@@ -43,7 +48,7 @@ public class TwitterManager {
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
 		// Print them to console
-		System.err.println("Using authentication data: \n Consumer key:" + authData.get("consumerKey").getAsString() + 
+		logger.debug("Using authentication data: \n Consumer key:" + authData.get("consumerKey").getAsString() + 
 				"\n Consumer secret:" + authData.get("consumerSecret").getAsString() + 
 				"\n accessToken" + authData.get("accessToken").getAsString() + 
 				"\n accessTokenSecret" + authData.get("accessTokenSecret").getAsString());
@@ -71,7 +76,7 @@ public class TwitterManager {
 
 	public boolean isDone() {
 		if(client.isDone()){ 
-			System.out.println("Client connection closed unexpectedly: " + client.getExitEvent().getMessage());
+			logger.info("Client connection closed unexpectedly: " + client.getExitEvent().getMessage());
 			client.stop();
 			return true;
 		}

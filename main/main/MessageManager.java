@@ -3,6 +3,9 @@ package main;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,6 +16,8 @@ public class MessageManager {
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
+	private static final Logger logger = LogManager.getLogger("AppLogger");
+	private static final Logger tweetLogger = LogManager.getLogger("TweetLogger");
 	public BlockingQueue<String> getMsgQueue() {
 		return msgQueue;
 	}
@@ -49,42 +54,65 @@ public class MessageManager {
 		}
 		
 		// If it's a delete status, return
-		if(parsedMessage.get("delete")!=null) return;
+		if(parsedMessage.get("delete")!=null) {
+			logger.trace("Delete status received, ignoring");
+			tweetLogger.debug("(delete status)");
+			return;
+		}
+		logger.trace("Received tweet, processing");
 		
 		// Get values from fields
-		String idstr = getString(parsedMessage.get("id_str"));
-		String text = getString(parsedMessage.get("text"));
-		JsonObject user = getObject(parsedMessage,"user");
-		String user_idstr = getString(getElement(user,"id_str"));
-		String user_name = getString(getElement(user,"name"));
-		JsonObject entitiesObject = getObject(parsedMessage,"entities");
-		JsonArray mediaObject = getArray(entitiesObject,"media");
-		boolean hasMedia=false;
-		if(mediaObject!=null) 
-			hasMedia=true; 
+		String idstr;
+		String text;
+		String user_idstr;
+		String user_name;
+		try{
+			idstr = parsedMessage.get("id_str").getAsString();
+			text = parsedMessage.get("text").getAsString();
+		} catch(NullPointerException e){
+			logger.error("Received an invalid message: id_str or text is empty."
+					+ "\nMessage: " + parsedMessage.getAsString());
+			tweetLogger.warn("(Invalid message!");
+			return;
+		}
+		try{
+			JsonObject user = parsedMessage.getAsJsonObject("user");
+			user_idstr = user.get("id_str").getAsString();
+			user_name = user.get("name").getAsString();
+		} catch(NullPointerException e){
+			logger.error("Received an invalid message: user, user.id_str or user.name is empty."
+					+ "\nMessage:" + parsedMessage.getAsString());
+			tweetLogger.warn("(Invalid message!");
+			return;
+		}
+		JsonArray mediaList=null;
+		boolean hasPicture=false;
+		try{
+			JsonObject entities = parsedMessage.getAsJsonObject("entities");
+			mediaList = entities.getAsJsonArray("media");
+			// Browse media and search for a picture
+			logger.trace("Starting to process media array...");
+			for (JsonElement aMedia : mediaList){
+				String thisMediaType = aMedia.getAsJsonObject().get("type").getAsString();
+				logger.trace("Found media of type: " + thisMediaType);
+				if(thisMediaType.equals("photo")){
+					hasPicture=true;
+					logger.debug("Picture found!");;
+				}
+			}
+			logger.trace("Finished processing media array");
+		} catch(NullPointerException e){
+			
+		}
 		
-		System.err.println("Message " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr + ". Has media: " + hasMedia);
+		// Print to log
+		tweetLogger.info("\nMessage " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr + ". Has picture: " + hasPicture);
+		if (mediaList!=null) tweetLogger.info("Media: " + mediaList);
 		
 		// Push to Esper stream
-		TweetEvent tweet = new TweetEvent(idstr, text, user_idstr, user_name, hasMedia);
+		TweetEvent tweet = new TweetEvent(idstr, text, user_idstr, user_name, hasPicture);
+		logger.trace("Pushing event to Esper");
 		esperManager.pushToEsper(tweet);
 	}
 	
-	// This methods are safe for empty fields
-	private String getString(JsonElement json){
-		if(json==null) return "(empty)";
-		else return json.getAsString();
-	}
-	private JsonObject getObject(JsonObject json,String obj){
-		if(json==null) return null;
-		else return json.getAsJsonObject(obj);
-	}
-	private JsonElement getElement(JsonObject json,String el){
-		if(json==null) return null;
-		else return json.get(el);
-	}
-	private JsonArray getArray(JsonObject json,String obj){
-		if(json==null) return null;
-		else return json.getAsJsonArray(obj);
-	}
 }
