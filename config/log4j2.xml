@@ -20,13 +20,13 @@
 		</RollingFile>
 	</Appenders>
 	<Loggers>
-		<Logger name="TweetLogger" level="info" additivity="false">
+		<Logger name="TweetLogger" level="off" additivity="false">
 			<AppenderRef ref="TweetLogFile"/>
 		</Logger>
-		<Logger name="EsperLogger" level="info" additivity="false">
+		<Logger name="EsperLogger" level="off" additivity="false">
 			<AppenderRef ref="EsperLogFile"/>
 		</Logger>
-		<Logger name="AppLogger" level="warn" additivity="false">
+		<Logger name="AppLogger" level="debug" additivity="false">
 			<AppenderRef ref="Console"/>
 		</Logger>
 		<Root level="error">

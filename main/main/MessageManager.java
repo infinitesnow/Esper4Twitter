@@ -72,7 +72,7 @@ public class MessageManager {
 		} catch(NullPointerException e){
 			logger.error("Received an invalid message: id_str or text is empty."
 					+ "\nMessage: " + parsedMessage.getAsString());
-			tweetLogger.warn("(Invalid message!");
+			tweetLogger.error("(Invalid message!");
 			return;
 		}
 		try{
@@ -82,7 +82,7 @@ public class MessageManager {
 		} catch(NullPointerException e){
 			logger.error("Received an invalid message: user, user.id_str or user.name is empty."
 					+ "\nMessage:" + parsedMessage.getAsString());
-			tweetLogger.warn("(Invalid message!");
+			tweetLogger.error("(Invalid message!");
 			return;
 		}
 		JsonArray mediaList=null;
@@ -97,7 +97,7 @@ public class MessageManager {
 				logger.trace("Found media of type: " + thisMediaType);
 				if(thisMediaType.equals("photo")){
 					hasPicture=true;
-					logger.debug("Picture found!");;
+					logger.trace("Picture found!");;
 				}
 			}
 			logger.trace("Finished processing media array");
@@ -111,7 +111,6 @@ public class MessageManager {
 		
 		// Push to Esper stream
 		TweetEvent tweet = new TweetEvent(idstr, text, user_idstr, user_name, hasPicture);
-		logger.trace("Pushing event to Esper");
 		esperManager.pushToEsper(tweet);
 	}
 	
