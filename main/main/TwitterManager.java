@@ -7,21 +7,24 @@ import java.util.concurrent.BlockingQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Throwables;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Constants;
 import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
+import com.twitter.hbc.core.endpoint.UserstreamEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.BasicClient;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 
+@SuppressWarnings("unused")
 public class TwitterManager {
-	
+
 	private static final Logger logger = LogManager.getLogger("AppLogger");
-	
+
 	private JsonObject readAuthData(){
 		JsonParser parser = new JsonParser(); 
 		JsonObject authData = null;
@@ -29,21 +32,22 @@ public class TwitterManager {
 			authData = (JsonObject) parser.parse(new FileReader("./config/token.json"));
 		} catch (FileNotFoundException e) {
 			logger.fatal("Could not find login credentials data.");
-			e.printStackTrace();
+			logger.debug(Throwables.getStackTraceAsString(e));
 		} catch (JsonParseException e) {
 			logger.fatal("Could not parse login credentials data.");
-			e.printStackTrace();
+			logger.debug(Throwables.getStackTraceAsString(e));
 		} 
 		return authData;
 	}
-	
+
 	private BasicClient client;
-	
-	private void initializeConnection(BlockingQueue<String> msgQueue) {
+
+	public TwitterManager(BlockingQueue<String> msgQueue) {
+		
 		// Define our endpoint: By default, delimited=length is set (we need this for our processor)
 		// and stall warnings are on.
 		StatusesSampleEndpoint endpoint = new StatusesSampleEndpoint();
-		// serstreamEndpoint endpoint = new UserstreamEndpoint();
+		//UserstreamEndpoint endpoint = new UserstreamEndpoint();
 
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
@@ -61,6 +65,7 @@ public class TwitterManager {
 		client = new ClientBuilder()
 				.name("twitterClient")
 				.hosts(Constants.STREAM_HOST)
+		//		.hosts(Constants.USERSTREAM_HOST)
 				.endpoint(endpoint)
 				.authentication(auth)
 				.processor(new StringDelimitedProcessor(msgQueue))
@@ -68,10 +73,6 @@ public class TwitterManager {
 
 		// Establish a connection
 		client.connect();
-	}
-
-	public TwitterManager(BlockingQueue<String> msgQueue) {
-		initializeConnection(msgQueue);
 	}
 
 	public boolean isDone() {

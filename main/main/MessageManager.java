@@ -1,11 +1,14 @@
 package main;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Throwables;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,6 +16,8 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 public class MessageManager {
+	private final int SLEEP_TIMER=20;
+	private final int THREADS=8;
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
@@ -26,41 +31,64 @@ public class MessageManager {
 		// Create an appropriately sized blocking queue
 		msgQueue = new LinkedBlockingQueue<String>(10000);
 	}
-	
-	public void processStream(){
+
+	public void processStream() throws InterruptedException{
 		twitterManager = new TwitterManager(msgQueue);
 		esperManager = new EsperManager();
-		while(true){
-			if(twitterManager.isDone()) break;
-			handleMessage(msgQueue.poll());
+		ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+		for (int i=0; i<THREADS; i++)
+			executor.submit(
+					() -> 
+					{
+						while(true){
+							if(twitterManager.isDone()) break;
+							pollQueue();
+							try {
+								Thread.sleep(SLEEP_TIMER);
+							} catch (InterruptedException e) {
+								logger.warn("Thread interrupted while sleeping");
+								logger.debug(Throwables.getStackTraceAsString(e));
+							}
+						}
+					});
+	}
+
+	private void pollQueue() {
+		String msg=null;
+		synchronized (this) {
+			if(msgQueue.isEmpty()) return;
+			msg=msgQueue.poll();
 		}
+		handleMessage(msg);
 	}
 
 	public void handleMessage(String msg) {
+
+		logger.trace("Received tweet, processing");
+
 		// Parse the tweet
-		if (msg==null) return;
 		JsonParser parser = new JsonParser(); 
 		JsonObject parsedMessage=null;
 		try {
 			parsedMessage = (JsonObject) parser.parse(msg);
 			if(parsedMessage==null) throw new Exception("Received null message");
 		} catch (JsonParseException e) {
-			System.err.println("Failed to parse message.");
-			e.printStackTrace();
+			logger.warn("Failed to parse message.");
+			logger.debug(Throwables.getStackTraceAsString(e));
+			return;
 		} catch (Exception e) {
-			System.err.println("Parsed message is null.");
-			e.printStackTrace();
+			logger.warn("Parsed message is null.");
+			logger.debug(Throwables.getStackTraceAsString(e));
 			return;
 		}
-		
-		// If it's a delete status, return
-		if(parsedMessage.get("delete")!=null) {
-			logger.trace("Delete status received, ignoring");
-			tweetLogger.debug("(delete status)");
+
+		// If it's not a tweet, return
+		if(parsedMessage.get("created_at")==null) {
+			logger.trace("Not a tweet, ignoring");
+			tweetLogger.debug("(notatweet)");
 			return;
 		}
-		logger.trace("Received tweet, processing");
-		
+
 		// Get values from fields
 		String idstr;
 		String text;
@@ -85,6 +113,8 @@ public class MessageManager {
 			tweetLogger.error("(Invalid message!");
 			return;
 		}
+
+		// Check for media
 		JsonArray mediaList=null;
 		boolean hasPicture=false;
 		try{
@@ -102,16 +132,18 @@ public class MessageManager {
 			}
 			logger.trace("Finished processing media array");
 		} catch(NullPointerException e){
-			
+			// Does not contain media, do nothing
 		}
-		
+
 		// Print to log
-		tweetLogger.info("\nMessage " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr + ". Has picture: " + hasPicture);
-		if (mediaList!=null) tweetLogger.info("Media: " + mediaList);
-		
+		synchronized(this){
+			tweetLogger.info("\nMessage " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr + ". Has picture: " + hasPicture);
+			if (mediaList!=null) tweetLogger.info("Media: " + mediaList);
+		}
+
 		// Push to Esper stream
 		TweetEvent tweet = new TweetEvent(idstr, text, user_idstr, user_name, hasPicture);
 		esperManager.pushToEsper(tweet);
 	}
-	
+
 }

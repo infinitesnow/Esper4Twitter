@@ -18,6 +18,7 @@ import com.espertech.esper.client.EPRuntime;
 import com.espertech.esper.client.EPServiceProvider;
 import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
+import com.google.common.base.Throwables;
 
 public class EsperManager {
 
@@ -45,11 +46,11 @@ public class EsperManager {
 			queryList=getQueries();
 		} catch (FileNotFoundException e) {
 			logger.error("No query configuration file found");
-			e.printStackTrace();
+			logger.debug(Throwables.getStackTraceAsString(e));
 			return;
 		} catch (Exception e) {
 			logger.error("Input error while trying to read query from file.");
-			e.printStackTrace();
+			logger.debug(Throwables.getStackTraceAsString(e));
 			return;
 		}
 		
@@ -77,12 +78,12 @@ public class EsperManager {
 		for (File queryFile : FileUtils.listFiles(new File("./config/queries/"), FileFilterUtils.trueFileFilter(), null)){
 			String query = FileUtils.readFileToString(queryFile, StandardCharsets.UTF_8);
 			queryList.add(query);
-			logger.trace("Found query:\n" + query + "\n");
+			logger.trace("Found query:\n" + query);
 		}
 		return queryList;
 	}
 
-	public void pushToEsper(TweetEvent tweet) {
+	public synchronized void pushToEsper(TweetEvent tweet) {
 		logger.trace("Pushing event to Esper: " + tweet.toString());
 		cepRT.sendEvent(tweet);
 		logger.trace("Pushed successfully.");

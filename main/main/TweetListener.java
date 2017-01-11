@@ -9,9 +9,8 @@ import com.espertech.esper.client.UpdateListener;
 public class TweetListener implements UpdateListener {
 
 	private static final Logger esperLogger = LogManager.getLogger("EsperLogger");
-	
 	public void update(EventBean[] incomingEvents, EventBean[] outgoingEvents) {
-		
+		if (incomingEvents==null) return;
 		for (EventBean e : incomingEvents) {
 			esperLogger.info(e.getUnderlying());
 		}
