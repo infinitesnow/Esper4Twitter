@@ -8,14 +8,14 @@
 			<PatternLayout pattern="[%d{HH:mm:ss}] %msg%n"/>
 			<policies>
 				<SizeBasedTriggeringPolicy size="20M"/>
-				<TimeBasedTriggeringPolicy />
+				<TimeBasedTriggeringPolicy interval=4 modulate=true />
 			</policies>
 		</RollingFile>
 		<RollingFile name="EsperLogFile" fileName="logs/esper.log" filePattern="logs/%d{yy-MM-dd}/esper-%d{yyyy-MM-dd-kk}-%i.log.gz">
 			<PatternLayout pattern="[%d{HH:mm:ss}] %msg%n"/>
 			<policies>
 				<SizeBasedTriggeringPolicy size="20M"/>
-				<TimeBasedTriggeringPolicy />
+				<TimeBasedTriggeringPolicy interval=12 modulate=true />
 			</policies>
 		</RollingFile>
 	</Appenders>
