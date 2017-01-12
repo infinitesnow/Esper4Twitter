@@ -1,0 +1,4 @@
+FORMAT "ValidFormat %s"
+select count(*) as MYINVALIDVALUE
+from TweetEvent.win:time( 60 sec )
+output snapshot every 10 sec 

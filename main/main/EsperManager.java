@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -23,7 +21,7 @@ import com.espertech.esper.client.EPStatement;
 import com.google.common.base.Throwables;
 
 public class EsperManager {
-	
+
 	private EPRuntime cepRT;
 	private EPStatement cepStatement;
 	private EPServiceProvider cep;
@@ -55,11 +53,9 @@ public class EsperManager {
 			logger.debug(Throwables.getStackTraceAsString(e));
 			return;
 		}
-		
+
 		// Insert the queries into Esper
 		insertQueries(queryList);
-
-		logger.trace("Finished parsing queries.");
 
 		// The EP runtime API allows to send events into different streams
 		cepRT = cep.getEPRuntime();
@@ -68,33 +64,44 @@ public class EsperManager {
 
 	private void insertQueries(List<String> queryList) {
 		for (String query : queryList){
-			// Create listener output header
-			String patternString="FORMAT\\s+\\\"(.*?)\\\"\\s+";
-			logger.debug("Pattern string: " + patternString);
-			Pattern pattern = Pattern.compile(patternString);
-			Matcher  matcher = pattern.matcher(query);
-			if(!matcher.find()){
-				logger.warn("No valid format found, trying to insert query as generic");
-				insertGenericQuery(query);
-				continue;
-				}
-			String format = matcher.group(1);
-			logger.debug("Format: " + format);
-			// Prepare query
-			query=query.replaceAll("FORMAT\\s+\\\".*?\\\"\\s+","");
+			// Parse the query
+			QueryParser parser = new QueryParser(query);
+			query=parser.getQuery();
+			// Get output header format
+			String format = parser.getFormat();
+			// Get arguments
+			List<String> argumentNames = parser.getArgumentNames();
 			logger.debug("Inserting query: " + query);
-			// Create statement and attach a listener to it
-			cepStatement = cepAdm.createEPL(query);
-			cepStatement.addListener(new TweetListener(format));
-			logger.debug("Done.");
+			// Create statement
+			try{
+				cepStatement = cepAdm.createEPL(query);
+			} catch( Exception e){
+				logger.error("Could not insert query.");
+				logger.debug(Throwables.getStackTraceAsString(e));
+				continue;
+			}
+			logger.debug("Query inserted correctly.");
+			if(format==null){
+				logger.warn("No valid format found, attaching generic listener.");
+				attachListener(query);
+			} else {
+				logger.debug("Format found, attaching format listener.");
+				attachFormatListener(query,format,argumentNames);
+			}
+			logger.debug("Query OK.");
 		}
+		logger.debug("Finished parsing queries.");
 	}
 
-	private void insertGenericQuery(String query) {
-		logger.debug("Inserting generic query: " + query);
-		// Create statement and attach a listener to it
-		cepStatement = cepAdm.createEPL(query);
-		cepStatement.addListener(new TweetListener(null));
+	private void attachFormatListener(String query, String format, List<String> argumentNames) {
+		logger.debug("Attaching format listener");
+		cepStatement.addListener(new TweetListenerFormat(format,argumentNames));
+		logger.debug("Done.");
+	}
+
+	private void attachListener(String query) {
+		logger.debug("Attaching generic listener");
+		cepStatement.addListener(new TweetListener());
 		logger.debug("Done.");
 	}
 

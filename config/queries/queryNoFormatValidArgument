@@ -1,0 +1,3 @@
+select count(*) as MYVALUE_TEST
+from TweetEvent.win:time( 60 sec )
+output snapshot every 10 sec 
