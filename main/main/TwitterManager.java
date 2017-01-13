@@ -47,7 +47,7 @@ public class TwitterManager {
 		// Define our endpoint: By default, delimited=length is set (we need this for our processor)
 		// and stall warnings are on.
 		StatusesSampleEndpoint endpoint = new StatusesSampleEndpoint();
-		//UserstreamEndpoint endpoint = new UserstreamEndpoint();
+		// UserstreamEndpoint endpoint = new UserstreamEndpoint();
 
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
