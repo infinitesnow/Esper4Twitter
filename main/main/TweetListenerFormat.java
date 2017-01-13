@@ -44,7 +44,7 @@ public class TweetListenerFormat extends TweetListener{
 				i++;
 			}
 			logger.info("Outputting with format to log");
-			esperLogger.info(String.format(outputFormat,(Object) outputArguments));
+			esperLogger.info(String.format(outputFormat,(Object[]) outputArguments));
 		}
 	}
 }
