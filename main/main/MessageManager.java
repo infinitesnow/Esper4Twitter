@@ -9,11 +9,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Throwables;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+
+import beans.Tweet;
 
 public class MessageManager {
 	public static int SLEEP_TIMER=20;
@@ -68,11 +67,10 @@ public class MessageManager {
 		logger.trace("Received tweet, processing");
 
 		// Parse the tweet
-		JsonParser parser = new JsonParser(); 
-		JsonObject parsedMessage=null;
+		Tweet tweet=null;
 		try {
-			parsedMessage = (JsonObject) parser.parse(msg);
-			if(parsedMessage==null) throw new Exception("Received null message");
+			tweet = new Gson().fromJson(msg, Tweet.class);
+			if(tweet==null) throw new Exception("Received null message");
 		} catch (JsonParseException e) {
 			logger.warn("Failed to parse message.");
 			logger.debug(Throwables.getStackTraceAsString(e));
@@ -84,66 +82,21 @@ public class MessageManager {
 		}
 
 		// If it's not a tweet, return
-		if(parsedMessage.get("created_at")==null) {
+		if(tweet.getCreated_at()==null) {
 			logger.trace("Not a tweet, ignoring");
 			tweetLogger.debug("(notatweet)");
 			return;
 		}
 
-		// Get values from fields
-		String idstr;
-		String text;
-		String user_idstr;
-		String user_name;
-		try{
-			idstr = parsedMessage.get("id_str").getAsString();
-			text = parsedMessage.get("text").getAsString();
-		} catch(NullPointerException e){
-			logger.error("Received an invalid message: id_str or text is empty."
-					+ "\nMessage: " + parsedMessage.getAsString());
-			tweetLogger.error("(Invalid message!");
-			return;
-		}
-		try{
-			JsonObject user = parsedMessage.getAsJsonObject("user");
-			user_idstr = user.get("id_str").getAsString();
-			user_name = user.get("name").getAsString();
-		} catch(NullPointerException e){
-			logger.error("Received an invalid message: user, user.id_str or user.name is empty."
-					+ "\nMessage:" + parsedMessage.getAsString());
-			tweetLogger.error("(Invalid message!");
-			return;
-		}
-
-		// Check for media
-		JsonArray mediaList=null;
-		boolean hasPicture=false;
-		try{
-			JsonObject entities = parsedMessage.getAsJsonObject("entities");
-			mediaList = entities.getAsJsonArray("media");
-			// Browse media and search for a picture
-			logger.trace("Starting to process media array...");
-			for (JsonElement aMedia : mediaList){
-				String thisMediaType = aMedia.getAsJsonObject().get("type").getAsString();
-				logger.trace("Found media of type: " + thisMediaType);
-				if(thisMediaType.equals("photo")){
-					hasPicture=true;
-					logger.trace("Picture found!");;
-				}
-			}
-			logger.trace("Finished processing media array");
-		} catch(NullPointerException e){
-			// Does not contain media, do nothing
-		}
-
 		// Print to log
 		synchronized(this){
-			tweetLogger.info("\nMessage " + idstr + ": " + text + "\nBy " + user_name + " " + user_idstr + ". Has picture: " + hasPicture);
-			if (mediaList!=null) tweetLogger.info("Media: " + mediaList);
+			tweetLogger.info("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture());
+			logger.trace("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture());
+			tweetLogger.debug("Full message: " + msg);
+			logger.trace("Full, unparsed message: " + msg);
 		}
 
 		// Push to Esper stream
-		TweetEvent tweet = new TweetEvent(idstr, text, user_idstr, user_name, hasPicture);
 		esperManager.pushToEsper(tweet);
 	}
 
