@@ -2,7 +2,6 @@ package main;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,8 +13,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Constants;
-import com.twitter.hbc.core.endpoint.BaseEndpoint;
-import com.twitter.hbc.core.endpoint.StatusesFirehoseEndpoint;
 import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
 import com.twitter.hbc.core.endpoint.StreamingEndpoint;
 import com.twitter.hbc.core.endpoint.UserstreamEndpoint;
@@ -24,7 +21,6 @@ import com.twitter.hbc.httpclient.BasicClient;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
 
-@SuppressWarnings("unused")
 public class TwitterManager {
 
 	private static final Logger logger = LogManager.getLogger("AppLogger");
