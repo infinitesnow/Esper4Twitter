@@ -91,9 +91,13 @@ public class TwitterManager {
 		default: 
 			throw new Exception("No valid argument. Please run with SAMPLE or USER as argument.");
 		}
-
+		
+		logger.info("Client created, connecting.");
+		
 		// Establish a connection
 		client.connect();
+		
+		logger.info("Client creation completed.");
 	}
 
 	public boolean isDone() {

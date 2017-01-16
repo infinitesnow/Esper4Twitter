@@ -27,6 +27,7 @@ public class MessageManager {
 	}
 
 	public void processStream() throws InterruptedException{
+		logger.info("Starting to process stream...");
 		esperManager = new EsperManager();
 		ExecutorService executor = Executors.newFixedThreadPool(THREADS);
 		for (int i=0; i<THREADS; i++)
