@@ -3,6 +3,7 @@ package main;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +14,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Constants;
+import com.twitter.hbc.core.endpoint.BaseEndpoint;
+import com.twitter.hbc.core.endpoint.StatusesFirehoseEndpoint;
 import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
+import com.twitter.hbc.core.endpoint.StreamingEndpoint;
 import com.twitter.hbc.core.endpoint.UserstreamEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.BasicClient;
@@ -42,12 +46,7 @@ public class TwitterManager {
 
 	private BasicClient client;
 
-	public TwitterManager(BlockingQueue<String> msgQueue) {
-		
-		// Define our endpoint: By default, delimited=length is set (we need this for our processor)
-		// and stall warnings are on.
-		StatusesSampleEndpoint endpoint = new StatusesSampleEndpoint();
-		// UserstreamEndpoint endpoint = new UserstreamEndpoint();
+	public TwitterManager(String streamType, LinkedBlockingQueue<String> msgQueue) throws Exception {
 
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
@@ -61,15 +60,37 @@ public class TwitterManager {
 				authData.get("accessToken").getAsString(), authData.get("accessTokenSecret").getAsString()
 				);
 
-		// Create a new BasicClient. By default gzip is enabled.
-		client = new ClientBuilder()
-				.name("twitterClient")
-				.hosts(Constants.STREAM_HOST)
-		//		.hosts(Constants.USERSTREAM_HOST)
-				.endpoint(endpoint)
-				.authentication(auth)
-				.processor(new StringDelimitedProcessor(msgQueue))
-				.build();
+		// Define our endpoint: By default, delimited=length is set (we need this for our processor)
+		// and stall warnings are on.
+		StreamingEndpoint endpoint;
+		switch (streamType){
+		case "USER" : 
+			endpoint = (UserstreamEndpoint) new UserstreamEndpoint();
+			// Create a new BasicClient. By default gzip is enabled.
+			client = new ClientBuilder()
+					.name("twitterClient")
+					.hosts(Constants.USERSTREAM_HOST)
+					.endpoint(endpoint)
+					.authentication(auth)
+					.processor(new StringDelimitedProcessor(msgQueue))
+					.build();
+
+			break;
+		case "SAMPLE" : 
+			endpoint = (StatusesSampleEndpoint) new StatusesSampleEndpoint();
+			// Create a new BasicClient. By default gzip is enabled.
+			client = new ClientBuilder()
+					.name("twitterClient")
+					.hosts(Constants.STREAM_HOST)
+					.endpoint(endpoint)
+					.authentication(auth)
+					.processor(new StringDelimitedProcessor(msgQueue))
+					.build();
+
+			break;
+		default: 
+			throw new Exception("No valid argument. Please run with SAMPLE or USER as argument.");
+		}
 
 		// Establish a connection
 		client.connect();

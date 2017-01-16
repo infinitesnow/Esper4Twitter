@@ -3,7 +3,6 @@ package main;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,24 +14,19 @@ import com.google.gson.JsonParseException;
 import beans.Tweet;
 
 public class MessageManager {
-	public static int SLEEP_TIMER=20;
+	public static int SLEEP_TIMER=200;
 	public static final int THREADS=8;
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
 	private static final Logger logger = LogManager.getLogger("AppLogger");
 	private static final Logger tweetLogger = LogManager.getLogger("TweetLogger");
-	public BlockingQueue<String> getMsgQueue() {
-		return msgQueue;
-	}
-
-	public MessageManager(){
-		// Create an appropriately sized blocking queue
-		msgQueue = new LinkedBlockingQueue<String>(10000);
+	
+	public MessageManager(TwitterManager twitterManager) {
+		this.twitterManager=twitterManager;
 	}
 
 	public void processStream() throws InterruptedException{
-		twitterManager = new TwitterManager(msgQueue);
 		esperManager = new EsperManager();
 		ExecutorService executor = Executors.newFixedThreadPool(THREADS);
 		for (int i=0; i<THREADS; i++)
@@ -91,7 +85,7 @@ public class MessageManager {
 		// Print to log
 		synchronized(this){
 			tweetLogger.info("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture());
-			logger.trace("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture());
+			logger.trace("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture() +"\n");
 			tweetLogger.debug("Full message: " + msg);
 			logger.trace("Full, unparsed message: " + msg);
 		}
