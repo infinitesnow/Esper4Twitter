@@ -5,6 +5,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.base.Throwables;
+
 public class Main {
 	
 	private static final Logger logger = LogManager.getLogger("AppLogger");
@@ -19,6 +21,7 @@ public class Main {
 			twitterManager = new TwitterManager(streamType,msgQueue);
 		} catch (Exception e) {
 			logger.fatal(e.getMessage());
+			logger.debug(Throwables.getStackTraceAsString(e));
 			return;
 		}
 		MessageManager messageManager = new MessageManager(twitterManager);

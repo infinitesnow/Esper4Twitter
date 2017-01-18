@@ -1,18 +1,25 @@
 package main;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Throwables;
+import com.google.gson.Gson;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Constants;
+import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.core.endpoint.StatusesSampleEndpoint;
 import com.twitter.hbc.core.endpoint.StreamingEndpoint;
 import com.twitter.hbc.core.endpoint.UserstreamEndpoint;
@@ -20,6 +27,8 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.BasicClient;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
+
+import beans.Filters;
 
 public class TwitterManager {
 
@@ -41,8 +50,12 @@ public class TwitterManager {
 	}
 
 	private BasicClient client;
+	private Authentication auth; 
+	private LinkedBlockingQueue<String> msgQueue;
 
 	public TwitterManager(String streamType, LinkedBlockingQueue<String> msgQueue) throws Exception {
+
+		this.msgQueue = msgQueue;
 
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
@@ -51,49 +64,76 @@ public class TwitterManager {
 				"\n consumerSecret:" + authData.get("consumerSecret").getAsString() + 
 				"\n accessToken: " + authData.get("accessToken").getAsString() + 
 				"\n accessTokenSecret: " + authData.get("accessTokenSecret").getAsString());
-		Authentication auth = new OAuth1(
+		auth = new OAuth1(
 				authData.get("consumerKey").getAsString(), authData.get("consumerSecret").getAsString(),
 				authData.get("accessToken").getAsString(), authData.get("accessTokenSecret").getAsString()
 				);
 
 		// Define our endpoint: By default, delimited=length is set (we need this for our processor)
 		// and stall warnings are on.
-		StreamingEndpoint endpoint;
 		switch (streamType){
 		case "USER" : 
-			endpoint = (UserstreamEndpoint) new UserstreamEndpoint();
-			// Create a new BasicClient. By default gzip is enabled.
-			client = new ClientBuilder()
-					.name("twitterClient")
-					.hosts(Constants.USERSTREAM_HOST)
-					.endpoint(endpoint)
-					.authentication(auth)
-					.processor(new StringDelimitedProcessor(msgQueue))
-					.build();
-
+			createUserEndpoint();
 			break;
 		case "SAMPLE" : 
-			endpoint = (StatusesSampleEndpoint) new StatusesSampleEndpoint();
-			// Create a new BasicClient. By default gzip is enabled.
-			client = new ClientBuilder()
-					.name("twitterClient")
-					.hosts(Constants.STREAM_HOST)
-					.endpoint(endpoint)
-					.authentication(auth)
-					.processor(new StringDelimitedProcessor(msgQueue))
-					.build();
-
+			createSampleEndpoint();
+			break;
+		case "FILTER" :
+			createFilterEndpoint();
 			break;
 		default: 
-			throw new Exception("No valid argument. Please run with SAMPLE or USER as argument.");
+			throw new Exception("No valid argument. Please run with SAMPLE, USER or FILTER as argument.");
 		}
-		
+
 		logger.info("Client created, connecting.");
-		
+
 		// Establish a connection
 		client.connect();
-		
+
 		logger.info("Client creation completed.");
+	}
+
+	private void createClient(StreamingEndpoint endpoint, String HOST){
+		// Create a new BasicClient. By default gzip is enabled.
+		client = new ClientBuilder()
+				.name("twitterClient")
+				.hosts(HOST)
+				.endpoint(endpoint)
+				.authentication(auth)
+				.processor(new StringDelimitedProcessor(msgQueue))
+				.build();
+	}
+
+	private void createUserEndpoint(){
+		UserstreamEndpoint uendpoint = (UserstreamEndpoint) new UserstreamEndpoint();
+		createClient(uendpoint, Constants.USERSTREAM_HOST);
+	}
+
+	private void createSampleEndpoint(){
+		StatusesSampleEndpoint sendpoint = (StatusesSampleEndpoint) new StatusesSampleEndpoint();
+		createClient(sendpoint, Constants.STREAM_HOST);
+	}
+
+	private void createFilterEndpoint() throws Exception{
+		logger.trace("Creating Filter stream");
+		StatusesFilterEndpoint fendpoint = (StatusesFilterEndpoint) new StatusesFilterEndpoint();
+		logger.trace("Searching for filter configuration file...");
+		Filters filters=null;
+		try {
+			filters = new Gson().fromJson( FileUtils.readFileToString(new File("./config/filters.json"), StandardCharsets.UTF_8), Filters.class);
+		} catch (JsonSyntaxException | JsonIOException | FileNotFoundException e) {
+			logger.fatal("Cannot find a valid filter configuration file.");
+			logger.debug(Throwables.getStackTraceAsString(e));
+			return;
+		}
+		logger.info("Found filters:\nUsers: " + filters.getFollowings() + "\nTerms: " + filters.getTerms() + "\nLocations: " + filters.getLocations());
+		if(filters.getTerms()!=null)
+			fendpoint.trackTerms(filters.getTerms());
+		if(filters.getFollowings()!=null)
+			fendpoint.followings(filters.getFollowings());
+		if(filters.getLocations()!=null)
+			fendpoint.locations(filters.getLocations());
+		createClient(fendpoint, Constants.STREAM_HOST);
 	}
 
 	public boolean isDone() {
