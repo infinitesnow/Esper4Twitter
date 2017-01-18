@@ -24,6 +24,7 @@ public class MessageManager {
 	
 	public MessageManager(TwitterManager twitterManager) {
 		this.twitterManager=twitterManager;
+		this.msgQueue=twitterManager.getMsgQueue();
 	}
 
 	public void processStream() throws InterruptedException{

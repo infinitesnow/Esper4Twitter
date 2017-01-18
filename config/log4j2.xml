@@ -26,7 +26,7 @@
 		<Logger name="EsperLogger" level="info" additivity="false">
 			<AppenderRef ref="EsperLogFile"/>
 		</Logger>
-		<Logger name="AppLogger" level="debug" additivity="false">
+		<Logger name="AppLogger" level="info" additivity="false">
 			<AppenderRef ref="Console"/>
 		</Logger>
 		<Root level="error">

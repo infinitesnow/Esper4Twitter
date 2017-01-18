@@ -52,10 +52,15 @@ public class TwitterManager {
 	private BasicClient client;
 	private Authentication auth; 
 	private LinkedBlockingQueue<String> msgQueue;
+	
+	public LinkedBlockingQueue<String> getMsgQueue() {
+		return msgQueue;
+	}
 
-	public TwitterManager(String streamType, LinkedBlockingQueue<String> msgQueue) throws Exception {
+	public TwitterManager(String streamType) throws Exception {
 
-		this.msgQueue = msgQueue;
+		// Create an appropriately sized blocking queue
+		this.msgQueue = new LinkedBlockingQueue<String>(10000);
 
 		// Read login data from configuration file
 		JsonObject authData = readAuthData();
@@ -85,39 +90,31 @@ public class TwitterManager {
 			throw new Exception("No valid argument. Please run with SAMPLE, USER or FILTER as argument.");
 		}
 
-		logger.info("Client created, connecting.");
-
 		// Establish a connection
+		logger.info("Client created, connecting.");
 		client.connect();
-
-		logger.info("Client creation completed.");
-	}
-
-	private void createClient(StreamingEndpoint endpoint, String HOST){
-		// Create a new BasicClient. By default gzip is enabled.
-		client = new ClientBuilder()
-				.name("twitterClient")
-				.hosts(HOST)
-				.endpoint(endpoint)
-				.authentication(auth)
-				.processor(new StringDelimitedProcessor(msgQueue))
-				.build();
+		logger.info("Done.");
+		
 	}
 
 	private void createUserEndpoint(){
+		logger.trace("Creating User endpoint...");
 		UserstreamEndpoint uendpoint = (UserstreamEndpoint) new UserstreamEndpoint();
+		logger.trace("OK");
 		createClient(uendpoint, Constants.USERSTREAM_HOST);
 	}
 
 	private void createSampleEndpoint(){
+		logger.trace("Creating Sample endpoint...");
 		StatusesSampleEndpoint sendpoint = (StatusesSampleEndpoint) new StatusesSampleEndpoint();
+		logger.trace("OK");
 		createClient(sendpoint, Constants.STREAM_HOST);
 	}
 
 	private void createFilterEndpoint() throws Exception{
-		logger.trace("Creating Filter stream");
+		logger.trace("Creating Filter endpoint...");
 		StatusesFilterEndpoint fendpoint = (StatusesFilterEndpoint) new StatusesFilterEndpoint();
-		logger.trace("Searching for filter configuration file...");
+		logger.trace("Searching for filter configuration file");
 		Filters filters=null;
 		try {
 			filters = new Gson().fromJson( FileUtils.readFileToString(new File("./config/filters.json"), StandardCharsets.UTF_8), Filters.class);
@@ -133,7 +130,21 @@ public class TwitterManager {
 			fendpoint.followings(filters.getFollowings());
 		if(filters.getLocations()!=null)
 			fendpoint.locations(filters.getLocations());
+		logger.trace("OK");
 		createClient(fendpoint, Constants.STREAM_HOST);
+	}
+	
+	private void createClient(StreamingEndpoint endpoint, String HOST){
+		logger.trace("Creating client...");
+		// Create a new BasicClient. By default gzip is enabled.
+		client = new ClientBuilder()
+				.name("twitterClient")
+				.hosts(HOST)
+				.endpoint(endpoint)
+				.authentication(auth)
+				.processor(new StringDelimitedProcessor(msgQueue))
+				.build();
+		logger.trace("OK");
 	}
 
 	public boolean isDone() {
