@@ -2,4 +2,8 @@
 /.apt_generated/
 /logs/
 /main/examples/
-/release/
+/release/*/jarpackage.jar
+/release/*.tar.gz
+/release/*/config/
+/release/rpi/*.log
+/release/rpi/logs
