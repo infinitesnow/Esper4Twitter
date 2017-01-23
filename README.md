@@ -1,5 +1,5 @@
 # Esper4Twitter
-This is an application which uses hosebird client and Esper to query a stream of tweets from Twitter. It supports multiple queries loading, multithreaded tweet parsing, configurable logging with a custom format, and different levels of debug.
+This is an application which uses hosebird client and Esper to query a stream of tweets from Twitter. It supports three different stream types: user, sample and filter. It also features multiple queries loading, multithreaded tweet parsing, configurable logging with a custom format, and different levels of debug.
 
 JavaBeans folder contains JavaBeans to parse JSon format tweet into JavaBeans according to the Twitter documentation.
 

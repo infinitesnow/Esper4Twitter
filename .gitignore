@@ -5,5 +5,5 @@
 /release/*/jarpackage.jar
 /release/*.tar.gz
 /release/*/config/
-/release/rpi/*.log
-/release/rpi/logs
+/release/*/*.log
+/release/*/logs

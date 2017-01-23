@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project Esper4Twitter">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/../.."/>
+    <property name="dir.jarfile" value="${dir.buildfile}/pc"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/jarpackage.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="main.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.workspace}/Esper4Twitter/target/classes"/>
+            <zipfileset excludes="META-INF/*.SF" src="/opt/esper-5.5.0/esper-5.5.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/opt/esper-5.5.0/esper/lib/cglib-nodep-3.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/opt/esper-5.5.0/esper/lib/antlr-runtime-4.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/com/twitter/hbc-core/2.2.0/hbc-core-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/apache/httpcomponents/httpcore/4.2.4/httpcore-4.2.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/commons-codec/commons-codec/1.6/commons-codec-1.6.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/slf4j/slf4j-api/1.6.6/slf4j-api-1.6.6.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/com/twitter/joauth/6.0.2/joauth-6.0.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/com/google/code/findbugs/jsr305/1.3.9/jsr305-1.3.9.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/com/twitter/hbc-twitter4j/2.2.0/hbc-twitter4j-2.2.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/twitter4j/twitter4j-core/4.0.1/twitter4j-core-4.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/twitter4j/twitter4j-stream/4.0.1/twitter4j-stream-4.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/apache/logging/log4j/log4j-api/2.7/log4j-api-2.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/apache/logging/log4j/log4j-core/2.7/log4j-core-2.7.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/commons-io/commons-io/2.5/commons-io-2.5.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/org/slf4j/slf4j-simple/1.7.2/slf4j-simple-1.7.2.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/home/infinitesnow/.m2/repository/com/google/guava/guava/20.0/guava-20.0.jar"/>
+        </jar>
+    </target>
+</project>
