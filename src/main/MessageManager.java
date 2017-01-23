@@ -18,8 +18,8 @@ import com.google.gson.JsonParseException;
 import beans.MyTweet;
 
 public class MessageManager {
-	public static int SLEEP_TIMER=75;
-	public static final int THREADS=8;
+	public static int SLEEP_TIMER=500;
+	public static final int THREADS=1;
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
@@ -62,7 +62,7 @@ public class MessageManager {
 		pollerExecutor.scheduleAtFixedRate(
 				() -> {
 						logger.info("In queue: " + msgQueue.size() + " messages.");
-				}, 2, 10, TimeUnit.SECONDS);
+				}, 2, 300, TimeUnit.SECONDS);
 		
 	}
 

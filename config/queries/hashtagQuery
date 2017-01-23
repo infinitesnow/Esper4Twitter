@@ -1,8 +1,0 @@
-FORMAT "#mondaymotivation: %n%s%nPicture: %s"
-select t1.text as MYVALUE_TEXT1, t2.text as MYVALUE_TEXT2
-from pattern[ 	every
-				t1=Tweet(t1.hasHashtag("mondaymotivation")=true)
-				->
-				t2=Tweet(t2.hasPicture()=true)
-			]
-output every 10 sec

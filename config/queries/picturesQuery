@@ -1,7 +1,7 @@
-FORMAT "%s tweets, ratio of tweets with pictures: %s"
+FORMAT "%s,%s"
 select 	
 	count(*) as MYVALUE_COUNT,
 	(sum(case tweet.hasPicture() when true then 1 else 0 end ) / count(*) ) as MYVALUE_RATIO 
 
-from Tweet.win:time( 1 minute ) as tweet
-output snapshot every 10 sec
+from Tweet.win:time( 1 hour ) as tweet
+output snapshot every 5 minutes
