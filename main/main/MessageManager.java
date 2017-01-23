@@ -11,7 +11,7 @@ import com.google.common.base.Throwables;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
-import beans.Tweet;
+import beans.MyTweet;
 
 public class MessageManager {
 	public static int SLEEP_TIMER=200;
@@ -22,14 +22,14 @@ public class MessageManager {
 	private static final Logger logger = LogManager.getLogger("AppLogger");
 	private static final Logger tweetLogger = LogManager.getLogger("TweetLogger");
 	
-	public MessageManager(TwitterManager twitterManager) {
+	public MessageManager(TwitterManager twitterManager, EsperManager esperManager) {
 		this.twitterManager=twitterManager;
+		this.esperManager=esperManager;
 		this.msgQueue=twitterManager.getMsgQueue();
 	}
 
-	public void processStream() throws InterruptedException{
+	public void processStream(EsperManager esperManager) {
 		logger.info("Starting to process stream...");
-		esperManager = new EsperManager();
 		ExecutorService executor = Executors.newFixedThreadPool(THREADS);
 		for (int i=0; i<THREADS; i++)
 			executor.submit(
@@ -63,9 +63,9 @@ public class MessageManager {
 		logger.trace("Received tweet, processing");
 
 		// Parse the tweet
-		Tweet tweet=null;
+		MyTweet tweet=null;
 		try {
-			tweet = new Gson().fromJson(msg, Tweet.class);
+			tweet = new Gson().fromJson(msg, MyTweet.class);
 			if(tweet==null) throw new Exception("Received null message");
 		} catch (JsonParseException e) {
 			logger.warn("Failed to parse message.");

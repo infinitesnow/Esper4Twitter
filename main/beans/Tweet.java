@@ -1,13 +1,6 @@
 package beans;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import beans.Entities.Media;
-
 public class Tweet {
-
-	private static final Logger logger = LogManager.getLogger("AppLogger");
 
 	public class Coordinates{
 		private double[] coordinates;
@@ -181,35 +174,6 @@ public class Tweet {
 
 	public String getWithheld_scope() {
 		return withheld_scope;
-	}
-
-	public boolean isHasPicture(){
-		// Check for media
-		boolean hasPicture=false;
-		try{
-			Media[] mediaList = this.entities.getMedia();
-			// Browse media and search for a picture
-			logger.trace("Starting to process media array...");
-			for (Media media : mediaList){
-				String thisMediaType = media.getType();
-				logger.trace("Found media of type: " + thisMediaType);
-				if(thisMediaType.equals("photo")){
-					logger.trace("Picture found!");
-					hasPicture=true;
-				}
-			}
-			logger.trace("Finished processing media array");
-		} catch(NullPointerException e){
-			// Does not contain media, do nothing
-			return false;
-		}
-
-		if(hasPicture==true)
-			return true;
-		else {
-			logger.error("Something went wrong searching for a picture in a tweet");
-			return false;
-		}
 	}
 
 }

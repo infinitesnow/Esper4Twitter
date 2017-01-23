@@ -20,7 +20,7 @@ import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
 import com.google.common.base.Throwables;
 
-import beans.Tweet;
+import beans.MyTweet;
 
 public class EsperManager {
 
@@ -30,11 +30,11 @@ public class EsperManager {
 	private EPAdministrator cepAdm;
 	private Configuration cepConfig;
 	private static final Logger logger = LogManager.getLogger("AppLogger");
-	public EsperManager() {
+	public EsperManager() throws Exception {
 
 		// Create configuration
 		cepConfig = new Configuration();
-		cepConfig.addEventType("TweetEvent", Tweet.class.getName());
+		cepConfig.addEventType("MyTweet", MyTweet.class);
 
 		// Create Provider Manager with new configuration
 		cep = EPServiceProviderManager.getProvider("Twitter Stream", cepConfig);
@@ -64,7 +64,8 @@ public class EsperManager {
 
 	}
 
-	private void insertQueries(List<String> queryList) {
+	private void insertQueries(List<String> queryList) throws Exception {
+		int insertedQueries = 0;
 		for (String query : queryList){
 			// Parse the query
 			QueryParser parser = new QueryParser(query);
@@ -90,9 +91,12 @@ public class EsperManager {
 				logger.debug("Format found, attaching format listener.");
 				attachFormatListener(query,format,argumentNames);
 			}
+			insertedQueries++;
 			logger.info("Query OK.");
 		}
 		logger.info("Finished parsing queries.");
+		if (insertedQueries==0)
+			throw new Exception("No valid query found.");
 	}
 
 	private void attachFormatListener(String query, String format, List<String> argumentNames) {
@@ -117,7 +121,7 @@ public class EsperManager {
 		return queryList;
 	}
 
-	public void pushToEsper(Tweet tweet) {
+	public void pushToEsper(MyTweet tweet) {
 		logger.trace("Pushing event to Esper: " + tweet.toString());
 		cepRT.sendEvent(tweet);
 		logger.trace("Pushed successfully.");

@@ -13,15 +13,18 @@ public class Main {
 		// First argument is stream type
 		String streamType = args[0];
 		TwitterManager twitterManager=null;
+		EsperManager esperManager=null;
+		MessageManager messageManager=null;
 		try {
 			twitterManager = new TwitterManager(streamType);
+			esperManager = new EsperManager();
+			messageManager = new MessageManager(twitterManager,esperManager);
 		} catch (Exception e) {
 			logger.fatal(e.getMessage());
 			logger.debug(Throwables.getStackTraceAsString(e));
 			return;
 		}
-		MessageManager messageManager = new MessageManager(twitterManager);
-		messageManager.processStream();
+		messageManager.processStream(esperManager);
 	}
 
 }
