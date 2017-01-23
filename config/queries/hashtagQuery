@@ -1,0 +1,4 @@
+FORMAT "#mondaymotivation: %s"
+select tweet.text as MYVALUE_TEXT1
+from Tweet.win:time( 1 hour ) as tweet
+where tweet.hasHashtag("mondaymotivation")
