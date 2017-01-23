@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.duckdns.infinitesnow</groupId>
-	<artifactId>db2stream</artifactId>
-	<version>0.1</version>
-	<name>TwitterStream</name>
+	<artifactId>esper4twitter</artifactId>
+	<version>0.4.1-ALPHA</version>
+	<name>Esper4Twitter</name>
 	<description>DB2 Stream Application Example For DB2 Class</description>
 	<dependencies>
 		<dependency>
