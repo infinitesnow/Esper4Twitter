@@ -37,7 +37,7 @@ public class EsperManager {
 		cepConfig.addEventType("Tweet", MyTweet.class);
 
 		// Create Provider Manager with new configuration
-		cep = EPServiceProviderManager.getProvider("Twitter Stream", cepConfig);
+		cep = EPServiceProviderManager.getProvider("EventProviderManager", cepConfig);
 
 		// Through the EP administrator API we can manage the EPL Statement registration
 		cepAdm = cep.getEPAdministrator();

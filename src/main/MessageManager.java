@@ -3,25 +3,29 @@ package main;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import beans.MyTweet;
 
 public class MessageManager {
-	public static int SLEEP_TIMER=200;
+	public static int SLEEP_TIMER=75;
 	public static final int THREADS=8;
 	private EsperManager esperManager;
 	private TwitterManager twitterManager; 
 	private BlockingQueue<String> msgQueue;
 	private static final Logger logger = LogManager.getLogger("AppLogger");
 	private static final Logger tweetLogger = LogManager.getLogger("TweetLogger");
-	
+
 	public MessageManager(TwitterManager twitterManager, EsperManager esperManager) {
 		this.twitterManager=twitterManager;
 		this.esperManager=esperManager;
@@ -29,17 +33,20 @@ public class MessageManager {
 	}
 
 	public void processStream(EsperManager esperManager) {
+		
 		logger.info("Starting to process stream...");
-		ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+		
+		logger.trace("Submitting "+THREADS+" parser threads");
+		ThreadFactory parserThreadFactory = new ThreadFactoryBuilder()
+				.setNameFormat("parser-%d").build();
+		ExecutorService parserExecutor = Executors.newFixedThreadPool(THREADS,parserThreadFactory);
 		for (int i=0; i<THREADS; i++)
-			executor.submit(
-					() -> 
-					{
+			parserExecutor.submit(
+					() -> {
 						while(true){
 							if(twitterManager.isDone()) break;
 							pollQueue();
 							try {
-								logger.trace("In queue: " + msgQueue.size() + "messages. Sleeping");
 								Thread.sleep(SLEEP_TIMER);
 							} catch (InterruptedException e) {
 								logger.warn("Thread interrupted while sleeping");
@@ -47,6 +54,16 @@ public class MessageManager {
 							}
 						}
 					});
+		
+		logger.trace("Submitting poller thread");
+		ThreadFactory pollerThreadFactory = new ThreadFactoryBuilder()
+				.setNameFormat("poller").build();
+		ScheduledExecutorService pollerExecutor = Executors.newScheduledThreadPool(1,pollerThreadFactory);
+		pollerExecutor.scheduleAtFixedRate(
+				() -> {
+						logger.info("In queue: " + msgQueue.size() + " messages.");
+				}, 2, 10, TimeUnit.SECONDS);
+		
 	}
 
 	private void pollQueue() {
