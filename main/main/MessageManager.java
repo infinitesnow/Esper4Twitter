@@ -86,8 +86,11 @@ public class MessageManager {
 
 		// Print to log
 		synchronized(this){
-			tweetLogger.info("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture());
-			logger.trace("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + "\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.isHasPicture() +"\n");
+			tweetLogger.info("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + 
+					"\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.hasPicture());
+			logger.trace("\nMessage " + tweet.getId_str() + ": " + tweet.getText() + 
+					"\nBy " + tweet.getUser().getName() + ", ID " + tweet.getUser().getId_str() + ". Has picture: " + tweet.hasPicture() +
+					"\n");
 			tweetLogger.debug("Full message: " + msg);
 			logger.trace("Full, unparsed message: " + msg);
 		}

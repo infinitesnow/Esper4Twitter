@@ -37,6 +37,8 @@ public class QueryParser {
 		} catch (Exception e) {
 			logger.warn("Could not find a valid format. Setting it to null.");
 			logger.debug(Throwables.getStackTraceAsString(e));
+			logger.warn("Trying query as-is");
+			this.query=query;
 			return;
 		}
 		logger.debug("Format parsing completed successfully");

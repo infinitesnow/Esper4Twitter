@@ -34,7 +34,7 @@ public class EsperManager {
 
 		// Create configuration
 		cepConfig = new Configuration();
-		cepConfig.addEventType("MyTweet", MyTweet.class);
+		cepConfig.addEventType("Tweet", MyTweet.class);
 
 		// Create Provider Manager with new configuration
 		cep = EPServiceProviderManager.getProvider("Twitter Stream", cepConfig);

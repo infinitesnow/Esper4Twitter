@@ -8,11 +8,11 @@ import com.google.common.base.Throwables;
 import beans.Entities.Hashtags;
 import beans.Entities.Media;
 
-public class MyTweet extends Tweet {
+public class MyTweet extends Tweet{
 
 	private static final Logger logger = LogManager.getLogger("AppLogger");
 
-	public boolean isHasPicture(){
+	public boolean hasPicture(){
 		// Check for media
 		try{
 			Media[] mediaList = this.getEntities().getMedia();
@@ -36,7 +36,7 @@ public class MyTweet extends Tweet {
 		return false;
 	}
 	
-	public boolean isHasHashtag(String hashtag){
+	public boolean hasHashtag(String hashtag){
 		// Check presence of hashtag
 		try{
 			Hashtags[] hashtagList = this.getEntities().getHashtags();
