@@ -7,3 +7,8 @@
 /release/*/config/
 /release/*/*.log
 /release/*/logs
+doc/report.aux
+doc/report.dvi
+doc/report.log
+doc/report.synctex.gz
+

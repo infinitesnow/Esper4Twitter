@@ -9,7 +9,7 @@ t2[1].text as MYVALUE_TEXT3
 from pattern[ 	every
 				t1=Tweet(t1.hasHashtag("yolo")=true)
 				->
-				[2] t2=Tweet(t2.hasPicture()=true and t2.user.id_str=t1.user.id_str) where timer:within(30 minutes)
+				[2] t2=Tweet(t2.hasPicture()=true and t2.user.id_str=t1.user.id_str and t2.retweeted_status=null) where timer:within(30 minutes)
 			]
 
 output every 10 sec
